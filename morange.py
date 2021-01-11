@@ -28,7 +28,7 @@ class Node:
         print('\t' * i, end='')
         print(self)
         for child in self.child:
-            child.list(i+1)
+            child.list(i + 1)
 
 
 class DirNode(Node):
@@ -86,6 +86,7 @@ def help():
 
 
 def config():
+    # next part. 20210111
     pass
 
 
@@ -141,20 +142,40 @@ def parse_config_args():
 def initate():
     home = os.getenv('HOME')
     config_path = os.path.join(home, '.config/morange.conf')
-    if not os.path.exist(config_path):
-        print('creat a initate config file.')
+    if os.path.exists(config_path):
+        print('the utility not initately configured, please run "morange config", to configure.')
+        exit(0)
     else:
         with open(config_path) as config_file:
             db_path = None
             doc_path = None
+            pdf_opener = None
+            doc_opener = None
+            txt_opener = None
+            """Read morange configure information."""
             for line in config_file:
                 eles = line.rstrip().split('=')
                 if len(eles) == 2:
-                    if eles[0].strip() == 'db_path':
+                    var_ = eles[0].strip()
+                    if var_ == 'db_path':
                         exec('global db_path; ' + line)
-                    elif line[0].strip() == 'doc_path':
+                    elif var_ == 'doc_path':
                         exec('global doc_path; ' + line)
-        with open(os.path.join(db_path, 'db_config')) as db_config:
+                    elif var_ == 'pdf_opener':
+                        exec('global pdf_opener; ' + line)
+                    elif var_ == 'doc_opener':
+                        exec('global doc_opener; ' + line)
+                    elif var_ == 'txt_opener':
+                        exec('global txt_opener; ' + line)
+        if not (db_path and doc_path and pdf_opener and doc_opener and txt_opener):
+            print('there are some information not configured, please use "morange config" to configure.')
+            exit(0)
+        db_infor_path = os.path.join(db_path, '__db_infor__')
+        doc_infor_path = os.path.join(doc_path, '__doc_infor__')
+        if (not os.path.exists(db_infor_path)) or (not os.path.exists(doc_infor_path)):
+            print('there not a db initated, please use "morange init" to initate a db.')
+            exit(0)
+        with open(os.path.join(db_path, '__db_infor__')) as db_config:
             dbs = None
             current_db = None
             for line in db_config:
@@ -174,8 +195,11 @@ def initate():
                         exec('global current_doc; ' + line)
                     elif line[0].strip() == 'docs':
                         exec('global docs; ' + line)
+        if not (dbs and current_db and docs and current_doc):
+            print('there not a db initated, please use "morange init" to initate a db.')
     db_data = pickle.load(open(current_db), 'rb')
-    return home, config_path, db_path, doc_path, dbs, current_db, docs, current_doc, db_data
+    return (home, config_path, db_path, doc_path, db_infor_path, dbs,
+        current_db, doc_infor_path, docs, current_doc, db_data)
 
 
 def main():
@@ -212,9 +236,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
