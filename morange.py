@@ -2,8 +2,9 @@
 import argparse
 import os
 import re
-import sys
 import pickle
+import pathlib
+import configparser
 """
 Using a tree to store and maintain all information.
 A parent node: which contain indentifying information.
@@ -85,9 +86,33 @@ def help():
     pass
 
 
-def config():
+def config(args_list):
     # next part. 20210111
-    pass
+    def parse_args(args_list):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-db_path', type=pathlib.Path, default=None, help='morange database path.')
+        parser.add_argument('-doc_path', type=pathlib.Path, default=None, help='morange document storage path.')
+        parser.add_argument('-pdf_opener', type=str, default=None, help='program handle pdf file.')
+        parser.add_argument('-doc_opener', type=str, default=None, help='program handle otc/doc office file.')
+        parser.add_argument('-txt_opener', type=str, default=None, help='program handle txt plat file.')
+        args = parser.parse_args(args_list)
+        return args.db_path, args.doc_path, args.pdf_opener, args.doc_opener, args.txt_opener
+
+    home = os.getenv("HOME")
+    """
+    the location of configfile must fixed. it is under $
+    creat default configuration file and write default configure entry is work of setup.py. after the setup
+    process, the default db_path, doc_path directory should be exists also.
+    """
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    section = config['morange config']
+    if len(section) > 0:
+        print('Previous configure information:')
+        for key in section:
+            print(key, '=', section[key])
+    dt_path, args.doc_path,
+
 
 
 def list():
@@ -140,6 +165,10 @@ def parse_config_args():
 
 
 def initate():
+    """
+    First step is initate(), it function following:
+    1) check if 
+    """
     home = os.getenv('HOME')
     config_path = os.path.join(home, '.config/morange.conf')
     if os.path.exists(config_path):
@@ -204,6 +233,7 @@ def initate():
 
 def main():
     initate()
+
     args = parse_main_args()
     if len(args) == 0:
         input()
